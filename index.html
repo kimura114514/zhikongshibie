@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>舰口类制空计算器</title>
+    <style>
+        body { font-family: sans-serif; max-width: 600px; margin: 2rem auto; padding: 0 1rem; }
+        .result-box { background: #f0f8ff; padding: 1rem; border-radius: 8px; margin-top: 1rem; display: none; }
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+        th, td { border: 1px solid #ccc; padding: 8px; text-align: left; }
+        button { padding: 10px 20px; cursor: pointer; background: #007bff; color: white; border: none; border-radius: 4px;}
+        button:disabled { background: #ccc; }
+    </style>
+</head>
+<body>
+    <h1>✈️ 截图制空计算器</h1>
+    <p>上传游戏内的装备截图，AI 自动识别并计算制空。</p>
+    
+    <input type="file" id="fileInput" accept="image/*">
+    <br><br>
+    <button onclick="processImage()" id="btn">开始计算</button>
+
+    <div id="status" style="margin-top: 10px; color: #666;"></div>
+
+    <div class="result-box" id="resultArea">
+        <h2 style="margin-top:0">总制空: <span id="totalScore" style="color:red">0</span></h2>
+        <table id="detailTable">
+            <thead>
+                <tr><th>装备</th><th>搭载</th><th>改修</th><th>熟练度</th><th>单格制空</th></tr>
+            </thead>
+            <tbody></tbody>
+        </table>
+    </div>
+
+    <script>
+        // 【重要】把你刚才 Cloudflare Worker 的网址填在这里
+        const WORKER_URL = "https://你的worker名.你的名字.workers.dev"; 
+
+        async function processImage() {
+            const fileInput = document.getElementById('fileInput');
+            const file = fileInput.files[0];
+            if (!file) { alert("请先选择图片"); return; }
+
+            const btn = document.getElementById('btn');
+            const status = document.getElementById('status');
+            const resultArea = document.getElementById('resultArea');
+            
+            btn.disabled = true;
+            status.textContent = "AI 正在分析中 (约需 3-5 秒)...";
+            resultArea.style.display = 'none';
+
+            const formData = new FormData();
+            formData.append('image', file);
+
+            try {
+                const response = await fetch(WORKER_URL, {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const data = await response.json();
+
+                if (data.error) throw new Error(data.error);
+
+                // 渲染结果
+                document.getElementById('totalScore').textContent = data.total;
+                const tbody = document.querySelector('#detailTable tbody');
+                tbody.innerHTML = '';
+                
+                data.details.forEach(item => {
+                    const row = `<tr>
+                        <td>${item.name}</td>
+                        <td>${item.slot}</td>
+                        <td>★+${item.stars || 0}</td>
+                        <td>${item.rank || '-'}</td>
+                        <td>${item.score}</td>
+                    </tr>`;
+                    tbody.innerHTML += row;
+                });
+
+                resultArea.style.display = 'block';
+                status.textContent = "计算完成！";
+
+            } catch (err) {
+                console.error(err);
+                status.textContent = "出错了: " + err.message;
+            } finally {
+                btn.disabled = false;
+            }
+        }
+    </script>
+</body>
+</html>
