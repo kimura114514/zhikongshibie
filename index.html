@@ -103,7 +103,23 @@
         #previewImg:hover {
             opacity: 0.9;
         }
-
+        /* --- 新增/修改：给预览容器增加拖拽交互样式 --- */
+        #previewContainer {
+            display: none;
+            margin-top: 1rem;
+            text-align: center;
+            /* 增加边框让它看起来像个接收区，或者保持透明 */
+            border: 2px dashed transparent; 
+            border-radius: 10px;
+            padding: 10px;
+            transition: all 0.3s;
+        }
+        
+        #previewContainer.dragover {
+            border-color: var(--primary-color);
+            background-color: #eef6ff;
+            opacity: 0.8;
+        }
         /* 按钮样式 */
         .action-btn {
             width: 100%;
@@ -211,7 +227,7 @@
 
 <div class="container">
     <h1>砍口垒-截图制空计算器</h1>
-    <p class="subtitle" style="font-size: 0.8rem; color: #888; margin-top:5px;">艦隊コレクション-スクリーンショット制空計算機</p>
+    <p class="subtitle" >艦隊コレクション-スクリーンショット制空計算機</p>
     <p class="subtitle">拖拽或点击上传游戏截图，AI 自动识别计算</p>
     
     <!-- 拖拽上传区域 -->
@@ -278,6 +294,33 @@
         dropZone.classList.remove('dragover');
         if (e.dataTransfer.files.length) handleFile(e.dataTransfer.files[0]);
     });
+
+    // --- 新增代码开始：让预览区域也能接收拖拽 ---
+    
+    // 1. 拖拽进入预览区
+    previewContainer.addEventListener('dragover', (e) => {
+        e.preventDefault(); 
+        previewContainer.classList.add('dragover'); 
+    });
+
+    // 2. 拖拽离开预览区
+    previewContainer.addEventListener('dragleave', () => {
+        previewContainer.classList.remove('dragover');
+    });
+
+    // 3. 在预览区释放图片
+    previewContainer.addEventListener('drop', (e) => {
+        e.preventDefault();
+        previewContainer.classList.remove('dragover'); // 移除样式
+        if (e.dataTransfer.files.length) {
+            handleFile(e.dataTransfer.files[0]); // 调用原本的处理函数
+        }
+    });
+
+    // --- 新增代码结束 ---
+
+    previewImg.addEventListener('click', () => fileInput.click());
+
     previewImg.addEventListener('click', () => fileInput.click());
 
     function handleFile(file) {
