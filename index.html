@@ -1,93 +1,369 @@
 <!DOCTYPE html>
-<html>
+<html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
-    <title>舰口类制空计算器</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>舰队收藏-截图制空计算器</title>
     <style>
-        body { font-family: sans-serif; max-width: 600px; margin: 2rem auto; padding: 0 1rem; }
-        .result-box { background: #f0f8ff; padding: 1rem; border-radius: 8px; margin-top: 1rem; display: none; }
-        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
-        th, td { border: 1px solid #ccc; padding: 8px; text-align: left; }
-        button { padding: 10px 20px; cursor: pointer; background: #007bff; color: white; border: none; border-radius: 4px;}
-        button:disabled { background: #ccc; }
+        :root {
+            --primary-color: #4a90e2; /* 海军蓝 */
+            --primary-hover: #357abd;
+            --bg-color: #f4f7f6;
+            --card-bg: #ffffff;
+            --text-color: #333;
+            --border-color: #e1e4e8;
+        }
+
+        body {
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            margin: 0;
+            padding: 2rem 1rem;
+            display: flex;
+            justify-content: center;
+            min-height: 100vh;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 650px;
+            background: var(--card-bg);
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+            padding: 2rem;
+            box-sizing: border-box;
+        }
+
+        h1 {
+            text-align: center;
+            color: var(--primary-color);
+            margin-top: 0;
+            font-size: 1.8rem;
+        }
+
+        p.subtitle {
+            text-align: center;
+            color: #666;
+            margin-bottom: 1.5rem;
+            font-size: 0.95rem;
+        }
+
+        /* 拖拽上传区域样式 */
+        .upload-area {
+            border: 2px dashed var(--primary-color);
+            border-radius: 10px;
+            padding: 2rem;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background-color: #f9fbff;
+            position: relative;
+        }
+
+        .upload-area:hover, .upload-area.dragover {
+            background-color: #eef6ff;
+            border-color: var(--primary-hover);
+            transform: scale(1.01);
+        }
+
+        .upload-area p {
+            margin: 0;
+            font-size: 1rem;
+            color: #555;
+            pointer-events: none;
+        }
+
+        .upload-icon {
+            font-size: 3rem;
+            color: var(--primary-color);
+            margin-bottom: 10px;
+            display: block;
+            pointer-events: none;
+        }
+
+        #fileInput { display: none; }
+
+        /* 图片预览 */
+        #previewContainer {
+            display: none;
+            margin-top: 1rem;
+            text-align: center;
+        }
+
+        #previewImg {
+            max-width: 100%;
+            max-height: 300px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            border: 1px solid #ddd;
+            cursor: pointer; /* 提示可以点击更换 */
+        }
+        
+        #previewImg:hover {
+            opacity: 0.9;
+        }
+
+        /* 按钮样式 */
+        .action-btn {
+            width: 100%;
+            padding: 12px;
+            margin-top: 1.5rem;
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        .action-btn:hover {
+            background-color: var(--primary-hover);
+        }
+
+        .action-btn:disabled {
+            background-color: #ccc;
+            cursor: not-allowed;
+        }
+
+        /* 结果区域 */
+        .result-box {
+            margin-top: 2rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid var(--border-color);
+            display: none;
+            animation: fadeIn 0.5s;
+        }
+
+        /* 修改点1：护眼色调背景卡片 */
+        .total-score-card {
+            /* 柔和的绿色到蓝色的渐变，类似大自然色彩，对眼睛更友好 */
+            background: linear-gradient(135deg, #67b26f 0%, #4ca2cd 100%);
+            color: white;
+            padding: 1rem;
+            border-radius: 8px;
+            text-align: center;
+            margin-bottom: 1.5rem;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        .total-score-card h2 {
+            margin: 0;
+            font-size: 1.2rem;
+            font-weight: normal;
+            opacity: 0.9;
+        }
+        
+        .total-score-card span {
+            font-size: 2.5rem;
+            font-weight: bold;
+            display: block;
+            margin-top: 5px;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.1);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.9rem;
+        }
+
+        th, td {
+            padding: 10px;
+            text-align: center;
+            border-bottom: 1px solid #eee;
+        }
+
+        th {
+            background-color: #f8f9fa;
+            color: #666;
+            font-weight: 600;
+        }
+        
+        td:first-child { text-align: left; }
+
+        .rank-symbol { font-weight: bold; display: inline-block; width: 30px; text-align: center; font-family: monospace; }
+
+        /* 加载动画 */
+        .loading-spinner {
+            display: none;
+            text-align: center;
+            margin-top: 1rem;
+        }
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid var(--primary-color);
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 10px;
+        }
+
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
     </style>
 </head>
 <body>
-    <h1>✈️ 截图制空计算器</h1>
-    <p>上传游戏内的装备截图，AI 自动识别并计算制空。</p>
+
+<div class="container">
+    <h1>砍口垒-截图制空计算器</h1>
+    <p class="subtitle" style="font-size: 0.8rem; color: #888; margin-top:5px;">艦隊コレクション-スクリーンショット制空計算機</p>
+    <p class="subtitle">拖拽或点击上传游戏截图，AI 自动识别计算</p>
     
-    <input type="file" id="fileInput" accept="image/*">
-    <br><br>
-    <button onclick="processImage()" id="btn">开始计算</button>
+    <!-- 拖拽上传区域 -->
+    <div class="upload-area" id="dropZone">
+        <span class="upload-icon">📂</span>
+        <p>点击此处选择图片，或将图片拖拽至此</p>
+        <input type="file" id="fileInput" accept="image/*">
+    </div>
 
-    <div id="status" style="margin-top: 10px; color: #666;"></div>
+    <!-- 图片预览区域 -->
+    <div id="previewContainer">
+        <img id="previewImg" src="" alt="预览图" title="点击更换图片">
+        <p style="font-size: 0.8rem; color: #888; margin-top:5px;">图片已就绪，点击图片可更换</p>
+    </div>
 
+    <!-- 按钮与状态 -->
+    <button onclick="processImage()" id="btn" class="action-btn">开始计算</button>
+    
+    <div id="loading" class="loading-spinner">
+        <div class="spinner"></div>
+        <span style="color:#666; font-size: 0.9rem;">AI 正在分析装备数据...</span>
+    </div>
+
+    <!-- 结果展示区域 -->
     <div class="result-box" id="resultArea">
-        <h2 style="margin-top:0">总制空: <span id="totalScore" style="color:red">0</span></h2>
+        <div class="total-score-card">
+            <h2>舰队总制空值</h2>
+            <span id="totalScore">0</span>
+        </div>
+        
         <table id="detailTable">
             <thead>
-                <tr><th>装备</th><th>搭载</th><th>改修</th><th>熟练度</th><th>单格制空</th></tr>
+                <tr>
+                    <th style="width: 35%">装备名称</th>
+                    <th>搭载</th>
+                    <th>改修</th>
+                    <th>熟练度</th>
+                    <th>制空</th>
+                </tr>
             </thead>
             <tbody></tbody>
         </table>
     </div>
+</div>
 
-    <script>
-        // 【重要】把你刚才 Cloudflare Worker 的网址填在这里
-        const WORKER_URL = "https://morning-hall-4d7b.fengjiaooo123.workers.dev/"; 
+<script>
+    // 【重要】填入你的 Worker 地址
+    const WORKER_URL = "https://morning-hall-4d7b.fengjiaooo123.workers.dev/"; 
 
-        async function processImage() {
-            const fileInput = document.getElementById('fileInput');
-            const file = fileInput.files[0];
-            if (!file) { alert("请先选择图片"); return; }
+    let currentFile = null; 
 
-            const btn = document.getElementById('btn');
-            const status = document.getElementById('status');
-            const resultArea = document.getElementById('resultArea');
+    const dropZone = document.getElementById('dropZone');
+    const fileInput = document.getElementById('fileInput');
+    const previewContainer = document.getElementById('previewContainer');
+    const previewImg = document.getElementById('previewImg');
+
+    // 交互逻辑
+    dropZone.addEventListener('click', () => fileInput.click());
+    fileInput.addEventListener('change', function() { if (this.files.length) handleFile(this.files[0]); });
+    dropZone.addEventListener('dragover', (e) => { e.preventDefault(); dropZone.classList.add('dragover'); });
+    dropZone.addEventListener('dragleave', () => { dropZone.classList.remove('dragover'); });
+    dropZone.addEventListener('drop', (e) => {
+        e.preventDefault();
+        dropZone.classList.remove('dragover');
+        if (e.dataTransfer.files.length) handleFile(e.dataTransfer.files[0]);
+    });
+    previewImg.addEventListener('click', () => fileInput.click());
+
+    function handleFile(file) {
+        if (!file.type.startsWith('image/')) { alert("请上传图片文件"); return; }
+        currentFile = file;
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            previewImg.src = e.target.result;
+            previewContainer.style.display = 'block';
+            dropZone.style.display = 'none';
+        };
+        reader.readAsDataURL(file);
+    }
+    
+    // 修改点2：熟练度符号转换逻辑
+    function getRankSymbol(rank) {
+        const r = Number(rank);
+        
+        // 7级: 金色 >> (双箭头)
+        if (r === 7) return '<span class="rank-symbol" style="color:#FFA500; font-size: 1.1em;">>></span>'; 
+        
+        // 4-6级: 金色斜杠 /, //, ///
+        if (r === 6) return '<span class="rank-symbol" style="color:#FFA500;">///</span>';
+        if (r === 5) return '<span class="rank-symbol" style="color:#FFA500;">//</span>';
+        if (r === 4) return '<span class="rank-symbol" style="color:#FFA500;">/</span>';
+        
+        // 1-3级: 蓝色竖线 | (游戏原样)
+        if (r === 3) return '<span class="rank-symbol" style="color:#0099FF;">|||</span>';
+        if (r === 2) return '<span class="rank-symbol" style="color:#0099FF;">||</span>';
+        if (r === 1) return '<span class="rank-symbol" style="color:#0099FF;">|</span>';
+        
+        return '<span style="color:#ccc">-</span>';
+    }
+
+    async function processImage() {
+        if (!currentFile) { alert("请先选择或拖拽一张图片"); return; }
+
+        const btn = document.getElementById('btn');
+        const loading = document.getElementById('loading');
+        const resultArea = document.getElementById('resultArea');
+        
+        btn.disabled = true;
+        btn.textContent = "计算中...";
+        loading.style.display = 'block';
+        resultArea.style.display = 'none';
+
+        const formData = new FormData();
+        formData.append('image', currentFile);
+
+        try {
+            const response = await fetch(WORKER_URL, {
+                method: 'POST',
+                body: formData
+            });
+
+            const data = await response.json();
+            if (data.error) throw new Error(data.error);
+
+            document.getElementById('totalScore').textContent = data.total;
+            const tbody = document.querySelector('#detailTable tbody');
+            tbody.innerHTML = '';
             
-            btn.disabled = true;
-            status.textContent = "AI 正在分析中 (约需 3-5 秒)...";
-            resultArea.style.display = 'none';
+            data.details.forEach(item => {
+                const row = `<tr>
+                    <td style="font-weight:500;">${item.name}</td>
+                    <td>${item.slot}</td>
+                    <td style="color:#4a90e2">★+${item.stars || 0}</td>
+                    <td>${getRankSymbol(item.rank)}</td>
+                    <td style="font-weight:bold">${item.score}</td>
+                </tr>`;
+                tbody.innerHTML += row;
+            });
 
-            const formData = new FormData();
-            formData.append('image', file);
+            resultArea.style.display = 'block';
+            resultArea.scrollIntoView({ behavior: 'smooth' });
 
-            try {
-                const response = await fetch(WORKER_URL, {
-                    method: 'POST',
-                    body: formData
-                });
-
-                const data = await response.json();
-
-                if (data.error) throw new Error(data.error);
-
-                // 渲染结果
-                document.getElementById('totalScore').textContent = data.total;
-                const tbody = document.querySelector('#detailTable tbody');
-                tbody.innerHTML = '';
-                
-                data.details.forEach(item => {
-                    const row = `<tr>
-                        <td>${item.name}</td>
-                        <td>${item.slot}</td>
-                        <td>★+${item.stars || 0}</td>
-                        <td>${item.rank || '-'}</td>
-                        <td>${item.score}</td>
-                    </tr>`;
-                    tbody.innerHTML += row;
-                });
-
-                resultArea.style.display = 'block';
-                status.textContent = "计算完成！";
-
-            } catch (err) {
-                console.error(err);
-                status.textContent = "出错了: " + err.message;
-            } finally {
-                btn.disabled = false;
-            }
+        } catch (err) {
+            console.error(err);
+            alert("计算出错: " + err.message);
+        } finally {
+            btn.disabled = false;
+            btn.textContent = "开始计算";
+            loading.style.display = 'none';
         }
-    </script>
+    }
+</script>
+
 </body>
 </html>
