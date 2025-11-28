@@ -251,55 +251,122 @@
         @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
 
         /* ========================================= */
-        /* === 移动端响应式核心代码 === */
+        /* === 移动端响应式核心代码 (增强版) === */
         /* ========================================= */
         @media (max-width: 600px) {
             body {
-                padding: 0.5rem; /* 减少 Body 外边距 */
+                padding: 0.5rem;
             }
             .container {
-                padding: 1.5rem 1rem; /* 减少卡片内边距 */
+                padding: 1.5rem 1rem;
                 border-radius: 12px;
             }
-
-            /* 标题优化 */
+            
+            /* 标题微调 */
             h1 { font-size: 1.4rem; margin-top: 0.5rem; }
             p.subtitle { font-size: 0.85rem; margin-bottom: 1rem; }
 
-            /* 粘贴按钮：手机上改为普通流布局，位于标题上方，方便点击 */
+            /* 粘贴按钮：横条显示 */
             .clipboard-btn {
-                position: static; /* 取消绝对定位 */
+                position: static;
                 width: 100%;
                 margin-bottom: 1rem;
                 justify-content: center;
                 padding: 10px;
-                background-color: #f8f9fa; /* 浅底色 */
+                background-color: #f8f9fa;
+                box-sizing: border-box; /* 修复宽度溢出 */
             }
-            .clipboard-btn span {
-                display: inline !important; /* 强制显示文字 */
-            }
+            .clipboard-btn span { display: inline !important; }
 
-            /* 上传区域优化 */
+            /* 上传与结果卡片 */
             .upload-area { padding: 1.5rem 1rem; }
-            .upload-icon { font-size: 2.5rem; margin-bottom: 10px; }
-            .upload-area p { font-size: 0.9rem; }
-
-            /* 按钮间距 */
-            .action-btn { margin-top: 1.5rem; }
-
-            /* 结果卡片 */
             .total-score-card { padding: 1rem; margin-bottom: 1.5rem; }
-            .total-score-card h2 { font-size: 1.1rem; }
             .total-score-card span { font-size: 2rem; }
 
-            /* 表格紧凑化 */
-            th, td { padding: 8px 4px; font-size: 0.85rem; }
-            /* 装备名太长允许换行，但保持左对齐 */
-            td:first-child { text-align: left; }
+            /* -------------------------------------- */
+            /* === 核心：手机端表格转卡片布局 === */
+            /* -------------------------------------- */
             
-            /* 指南和页脚 */
-            .usage-guide { padding: 1rem; }
-            .footer { margin-top: 2rem; }
+            /* 1. 隐藏原来的表头，改用卡片内标签 */
+            .table-responsive thead {
+                display: none;
+            }
+
+            /* 2. 让表格行变成卡片块 */
+            .table-responsive tbody tr {
+                display: grid;
+                /* 定义网格：上方1行(名称)，下方4列(数值) */
+                grid-template-areas: 
+                    "name name name name"
+                    "slot star rank score";
+                grid-template-columns: 1fr 1fr 1fr 1fr; /* 四等分 */
+                gap: 8px 4px;
+                
+                background: #fff;
+                margin-bottom: 12px;
+                padding: 12px;
+                border: 1px solid #e1e4e8;
+                border-radius: 10px;
+                box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+            }
+
+            /* 3. 重置所有单元格样式 */
+            .table-responsive td {
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                justify-content: center;
+                border: none !important; /* 去除表格线 */
+                padding: 0 !important;
+                text-align: center;
+                background: transparent !important;
+            }
+
+            /* 4. 具体单元格布局 */
+            
+            /* 装备名称：独占第一行，左对齐，加粗 */
+            .table-responsive td:nth-child(1) {
+                grid-area: name;
+                align-items: flex-start; /* 左对齐 */
+                font-weight: 600;
+                color: #333;
+                font-size: 0.95rem;
+                border-bottom: 1px dashed #eee !important;
+                padding-bottom: 8px !important;
+                margin-bottom: 4px;
+                line-height: 1.4;
+            }
+
+            /* 搭载 */
+            .table-responsive td:nth-child(2) { grid-area: slot; }
+            /* 改修 */
+            .table-responsive td:nth-child(3) { grid-area: star; }
+            /* 熟练度 */
+            .table-responsive td:nth-child(4) { grid-area: rank; }
+            /* 制空值 */
+            .table-responsive td:nth-child(5) { grid-area: score; }
+
+            /* 5. 给数值添加伪元素标签（相当于小表头） */
+            .table-responsive td:not(:first-child)::before {
+                content: attr(data-label); /* 备用方案 */
+                font-size: 0.7rem;
+                color: #999;
+                margin-bottom: 2px;
+                font-weight: normal;
+            }
+            
+            /* 直接指定标签文字，简单粗暴且有效 */
+            .table-responsive td:nth-child(2)::before { content: "搭载"; }
+            .table-responsive td:nth-child(3)::before { content: "改修"; }
+            .table-responsive td:nth-child(4)::before { content: "熟练"; }
+            .table-responsive td:nth-child(5)::before { content: "制空"; color: var(--primary-color); }
+            
+            /* 强调制空分数的数字 */
+            .table-responsive td:nth-child(5) {
+                color: var(--primary-color);
+                font-weight: bold;
+                font-size: 1.1rem;
+            }
         }
     </style>
 </head>
