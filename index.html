@@ -5,8 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>舰队收藏-截图制空计算器</title>
     <style>
+        /* ... 保留原本的 root 和 body, container 样式 ... */
         :root {
-            --primary-color: #4a90e2; /* 海军蓝 */
+            --primary-color: #4a90e2;
             --primary-hover: #357abd;
             --bg-color: #f4f7f6;
             --card-bg: #ffffff;
@@ -15,7 +16,7 @@
         }
 
         body {
-            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            font-family: 'Segoe UI', Roboto, "Microsoft YaHei", sans-serif; /* 增加微软雅黑 */
             background-color: var(--bg-color);
             color: var(--text-color);
             margin: 0;
@@ -29,203 +30,250 @@
             width: 100%;
             max-width: 650px;
             background: var(--card-bg);
-            border-radius: 12px;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
-            padding: 2rem;
+            border-radius: 16px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+            padding: 2.5rem;
             box-sizing: border-box;
+            
+            /* 【关键修改】设置为相对定位，为了让右上角的按钮能以此为基准定位 */
+            position: relative; 
         }
-
-        h1 {
-            text-align: center;
-            color: var(--primary-color);
-            margin-top: 0;
-            font-size: 1.8rem;
-        }
-
-        p.subtitle {
-            text-align: center;
+       /* 【新增】右上角小按钮样式 */
+        .clipboard-btn {
+            position: absolute; /* 绝对定位 */
+            top: 20px;          /* 距离顶部 20px */
+            right: 20px;        /* 距离右侧 20px */
+            
+            /* 尺寸和排版 */
+            padding: 6px 12px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            
+            /* 颜色与边框 */
+            background-color: #ffffff;
+            border: 1px solid #d0d7de;
+            border-radius: 20px; /* 胶囊形状 */
             color: #666;
-            margin-bottom: 1.5rem;
-            font-size: 0.95rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            z-index: 10;
         }
 
-        /* 拖拽上传区域样式 */
+        .clipboard-btn:hover {
+            color: var(--primary-color);
+            border-color: var(--primary-color);
+            background-color: #f0f8ff;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+
+        .clipboard-btn:active {
+            transform: translateY(0);
+        }
+
+        /* 针对手机屏幕的适配：如果屏幕太小，只显示图标或者调整位置 */
+        @media (max-width: 480px) {
+            .clipboard-btn span {
+                display: none; /* 手机上隐藏文字，只留图标 */
+            }
+            .clipboard-btn {
+                padding: 8px; /* 调整为圆形按钮 */
+                border-radius: 50%;
+            }
+        }
+
+        /* ... h1, p.subtitle, upload-area 等样式保持不变 ... */
+        h1 { text-align: center; color: var(--primary-color); margin-top: 0; font-size: 1.8rem; letter-spacing: 1px;}
+        p.subtitle { text-align: center; color: #666; margin-bottom: 1.5rem; font-size: 0.95rem; }
+        
+        /* 优化上传区域 */
         .upload-area {
-            border: 2px dashed var(--primary-color);
-            border-radius: 10px;
-            padding: 2rem;
+            border: 2px dashed #d0d7de;
+            border-radius: 16px;
+            padding: 3rem 2rem;
             text-align: center;
             cursor: pointer;
-            transition: all 0.3s ease;
-            background-color: #f9fbff;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            background-color: #fafbfc;
             position: relative;
         }
-
         .upload-area:hover, .upload-area.dragover {
-            background-color: #eef6ff;
-            border-color: var(--primary-hover);
-            transform: scale(1.01);
+            background-color: #f0f8ff;
+            border-color: var(--primary-color);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(74, 144, 226, 0.1);
         }
-
-        .upload-area p {
-            margin: 0;
-            font-size: 1rem;
-            color: #555;
-            pointer-events: none;
-        }
-
-        .upload-icon {
-            font-size: 3rem;
-            color: var(--primary-color);
-            margin-bottom: 10px;
-            display: block;
-            pointer-events: none;
-        }
-
+        .upload-area p { margin: 0; font-size: 1rem; color: #6e7781; pointer-events: none; }
+        .upload-icon { font-size: 3.5rem; color: var(--primary-color); margin-bottom: 15px; display: block; opacity: 0.8; }
         #fileInput { display: none; }
 
-        /* 图片预览 */
+        /* 预览区域 */
         #previewContainer {
             display: none;
-            margin-top: 1rem;
+            margin-top: 1.5rem;
             text-align: center;
-        }
-
-        #previewImg {
-            max-width: 100%;
-            max-height: 300px;
-            border-radius: 8px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-            border: 1px solid #ddd;
-            cursor: pointer; /* 提示可以点击更换 */
-        }
-        
-        #previewImg:hover {
-            opacity: 0.9;
-        }
-        /* --- 新增/修改：给预览容器增加拖拽交互样式 --- */
-        #previewContainer {
-            display: none;
-            margin-top: 1rem;
-            text-align: center;
-            /* 增加边框让它看起来像个接收区，或者保持透明 */
-            border: 2px dashed transparent; 
-            border-radius: 10px;
+            border: 2px dashed transparent;
+            border-radius: 16px;
             padding: 10px;
             transition: all 0.3s;
         }
-        
-        #previewContainer.dragover {
-            border-color: var(--primary-color);
-            background-color: #eef6ff;
-            opacity: 0.8;
+        #previewContainer.dragover { border-color: var(--primary-color); background-color: #eef6ff; }
+        #previewImg {
+            max-width: 100%;
+            max-height: 300px;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            cursor: pointer;
+            transition: transform 0.3s;
         }
-        /* 按钮样式 */
+        #previewImg:hover { transform: scale(1.02); }
+
+        /* ========================================= */
+        /* === 核心修改：按钮样式美化 === */
+        /* ========================================= */
+
+        /* 按钮通用重置 */
+        .action-btn, .secondary-btn {
+            font-family: inherit;
+            border: none;
+            outline: none;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 600;
+            border-radius: 50px; /* 药丸形状 */
+            padding: 14px 24px;
+            transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+            position: relative;
+            overflow: hidden;
+            letter-spacing: 0.5px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* 1. 次级按钮（剪切板）：清爽的幽灵按钮风格 */
+        .secondary-btn {
+            width: 100%;
+            margin-top: 1.2rem;
+            background-color: #ffffff;
+            color: var(--primary-color);
+            border: 2px solid #e1e4e8; /* 默认浅灰边框，不抢眼 */
+            box-shadow: 0 2px 6px rgba(0,0,0,0.02);
+        }
+
+        .secondary-btn:hover {
+            border-color: var(--primary-color);
+            background-color: #f0f7ff;
+            color: var(--primary-hover);
+            transform: translateY(-2px); /* 微微上浮 */
+            box-shadow: 0 4px 12px rgba(74, 144, 226, 0.15);
+        }
+
+        .secondary-btn:active {
+            transform: translateY(0);
+            background-color: #e5f0ff;
+        }
+
+        /* 2. 主按钮（开始计算）：渐变+阴影，强调行动 */
         .action-btn {
             width: 100%;
-            padding: 12px;
-            margin-top: 1.5rem;
-            background-color: var(--primary-color);
+            margin-top: 2rem; /* 拉开距离 */
+            /* 漂亮的渐变蓝 */
+            background: linear-gradient(135deg, #4a90e2 0%, #2c6eb5 100%);
             color: white;
-            border: none;
-            border-radius: 8px;
-            font-size: 1rem;
-            font-weight: bold;
-            cursor: pointer;
-            transition: background 0.3s;
+            box-shadow: 0 8px 20px rgba(74, 144, 226, 0.3); /* 弥散阴影 */
         }
 
         .action-btn:hover {
-            background-color: var(--primary-hover);
+            background: linear-gradient(135deg, #5ca0f2 0%, #357abd 100%);
+            box-shadow: 0 12px 24px rgba(74, 144, 226, 0.4);
+            transform: translateY(-2px);
+        }
+
+        .action-btn:active {
+            transform: translateY(1px); /* 点击下沉 */
+            box-shadow: 0 4px 10px rgba(74, 144, 226, 0.2);
         }
 
         .action-btn:disabled {
-            background-color: #ccc;
+            background: #cbd5e0;
+            box-shadow: none;
             cursor: not-allowed;
+            transform: none;
         }
 
-        /* 结果区域 */
+        /* 结果区域样式微调 */
         .result-box {
-            margin-top: 2rem;
-            padding-top: 1.5rem;
-            border-top: 1px solid var(--border-color);
+            margin-top: 2.5rem;
+            padding-top: 2rem;
+            border-top: 1px solid #f0f0f0;
             display: none;
-            animation: fadeIn 0.5s;
+            animation: fadeIn 0.6s ease-out;
         }
 
-        /* 修改点1：护眼色调背景卡片 */
         .total-score-card {
-            /* 柔和的绿色到蓝色的渐变，类似大自然色彩，对眼睛更友好 */
-            background: linear-gradient(135deg, #67b26f 0%, #4ca2cd 100%);
-            color: white;
-            padding: 1rem;
-            border-radius: 8px;
+            background: linear-gradient(120deg, #84fab0 0%, #8fd3f4 100%); /* 更清新的渐变 */
+            color: #2d5a2f; /* 深色字增加对比度 */
+            padding: 1.5rem;
+            border-radius: 16px;
             text-align: center;
-            margin-bottom: 1.5rem;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            margin-bottom: 2rem;
+            box-shadow: 0 10px 25px rgba(132, 250, 176, 0.3);
+            border: 1px solid rgba(255,255,255,0.2);
         }
-
-        .total-score-card h2 {
-            margin: 0;
-            font-size: 1.2rem;
-            font-weight: normal;
-            opacity: 0.9;
-        }
-        
+        .total-score-card h2 { font-size: 1.4rem;font-weight: bold;opacity: 0.8; margin-bottom: 5px; color: #1f4037; }
         .total-score-card span {
             font-size: 2.5rem;
             font-weight: bold;
             display: block;
             margin-top: 5px;
-            text-shadow: 1px 1px 2px rgba(0,0,0,0.1);
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.1);
         }
 
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            font-size: 0.9rem;
+        /* 表格美化 */
+        table { width: 100%; border-collapse: separate; border-spacing: 0; font-size: 0.95rem; }
+        th { 
+            background-color: #f8f9fa; 
+            color: #555; 
+            font-weight: 600; 
+            padding: 12px;
+            border-bottom: 2px solid #eef2f5;
         }
-
-        th, td {
-            padding: 10px;
-            text-align: center;
-            border-bottom: 1px solid #eee;
+        td { 
+            padding: 12px; 
+            text-align: center; 
+            border-bottom: 1px solid #f0f0f0;
+            color: #444;
         }
-
-        th {
-            background-color: #f8f9fa;
-            color: #666;
-            font-weight: 600;
-        }
+        tr:last-child td { border-bottom: none; }
+        tr:hover td { background-color: #fafafa; }
         
-        td:first-child { text-align: left; }
+        .rank-symbol { font-weight: bold; display: inline-block; width: 30px; text-align: center; font-family: 'Consolas', monospace; }
 
-        .rank-symbol { font-weight: bold; display: inline-block; width: 30px; text-align: center; font-family: monospace; }
-
-        /* 加载动画 */
-        .loading-spinner {
-            display: none;
-            text-align: center;
-            margin-top: 1rem;
-        }
+        /* 动画保持不变 */
+        .loading-spinner { display: none; text-align: center; margin-top: 1rem; }
         .spinner {
-            border: 4px solid #f3f3f3;
-            border-top: 4px solid var(--primary-color);
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid var(--primary-color);
             border-radius: 50%;
-            width: 30px;
-            height: 30px;
-            animation: spin 1s linear infinite;
+            width: 24px; height: 24px;
+            animation: spin 0.8s linear infinite;
             margin: 0 auto 10px;
         }
-
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
     </style>
 </head>
 <body>
 
 <div class="container">
+    <button id="pasteBtn" class="clipboard-btn" title="读取剪切板图片">
+        <span>粘贴截图</span>
+    </button>
     <h1>砍口垒-截图制空计算器</h1>
     <p class="subtitle" >艦隊コレクション-スクリーンショット制空計算機</p>
     <p class="subtitle">拖拽或点击上传游戏截图，AI 自动识别计算</p>
@@ -234,8 +282,9 @@
     <div class="upload-area" id="dropZone">
         <span class="upload-icon">📂</span>
         <p>点击此处选择图片，或将图片拖拽至此</p>
-        <input type="file" id="fileInput" accept="image/*">
+        
     </div>
+    <input type="file" id="fileInput" accept="image/*">
 
     <!-- 图片预览区域 -->
     <div id="previewContainer">
@@ -319,10 +368,65 @@
 
     // --- 新增代码结束 ---
 
-    previewImg.addEventListener('click', () => fileInput.click());
+    // --- 之前的修复：请确保之前的重复监听代码已删除，只保留这一行 ---
+    previewImg.addEventListener('click', () => fileInput.click()); 
 
-    previewImg.addEventListener('click', () => fileInput.click());
+    // --- 新增：剪切板读取逻辑 ---
+    const pasteBtn = document.getElementById('pasteBtn');
 
+    pasteBtn.addEventListener('click', async () => {
+        try {
+            // 请求读取剪切板权限（通常浏览器会弹窗询问或需要 HTTPS 环境）
+            const clipboardItems = await navigator.clipboard.read();
+            
+            let foundImage = false;
+
+            for (const item of clipboardItems) {
+                // 查找剪切板项中是否有图片类型
+                const imageType = item.types.find(type => type.startsWith('image/'));
+                
+                if (imageType) {
+                    // 获取图片 Blob 数据
+                    const blob = await item.getType(imageType);
+                    // 将 Blob 转换为 File 对象（为了兼容后续逻辑，也可以直接传 Blob）
+                    const file = new File([blob], "clipboard_image.png", { type: imageType });
+                    
+                    // 调用现有的处理函数
+                    handleFile(file);
+                    foundImage = true;
+                    break; // 找到一张图就停止
+                }
+            }
+
+            if (!foundImage) {
+                alert("剪切板里没有图片哦，请先截图或复制图片。");
+            }
+
+        } catch (err) {
+            console.error(err);
+            // 常见错误处理：浏览器不支持、用户拒绝权限、或非 HTTPS 环境
+            if (err.name === 'NotAllowedError') {
+                alert("读取失败：请允许网页访问剪切板权限。");
+            } else {
+                alert("无法读取剪切板：请确保使用 HTTPS 协议或现代浏览器（Chrome/Edge/Firefox）。");
+            }
+        }
+    });
+// 监听全局粘贴事件 (Ctrl+V)
+    document.addEventListener('paste', (e) => {
+        const items = e.clipboardData && e.clipboardData.items;
+        if (items) {
+            for (let i = 0; i < items.length; i++) {
+                if (items[i].type.indexOf('image') !== -1) {
+                    const blob = items[i].getAsFile();
+                    handleFile(blob);
+                    e.preventDefault(); // 阻止默认粘贴行为
+                    break;
+                }
+            }
+        }
+    });
+    
     function handleFile(file) {
         if (!file.type.startsWith('image/')) { alert("请上传图片文件"); return; }
         currentFile = file;
