@@ -2,10 +2,9 @@
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>舰队收藏-截图制空计算器</title>
     <style>
-        /* ... 保留原本的 root 和 body, container 样式 ... */
         :root {
             --primary-color: #4a90e2;
             --primary-hover: #357abd;
@@ -16,7 +15,7 @@
         }
 
         body {
-            font-family: 'Segoe UI', Roboto, "Microsoft YaHei", sans-serif; /* 增加微软雅黑 */
+            font-family: 'Segoe UI', Roboto, "Microsoft YaHei", sans-serif;
             background-color: var(--bg-color);
             color: var(--text-color);
             margin: 0;
@@ -34,28 +33,23 @@
             box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
             padding: 2.5rem;
             box-sizing: border-box;
-            
-            /* 【关键修改】设置为相对定位，为了让右上角的按钮能以此为基准定位 */
             position: relative; 
         }
-       /* 【新增】右上角小按钮样式 */
+
+        /* === 粘贴按钮默认样式 (PC) === */
         .clipboard-btn {
-            position: absolute; /* 绝对定位 */
-            top: 20px;          /* 距离顶部 20px */
-            right: 20px;        /* 距离右侧 20px */
-            
-            /* 尺寸和排版 */
+            position: absolute;
+            top: 20px;
+            right: 20px;
             padding: 6px 12px;
             font-size: 0.85rem;
             font-weight: 600;
             display: flex;
             align-items: center;
             gap: 6px;
-            
-            /* 颜色与边框 */
             background-color: #ffffff;
             border: 1px solid #d0d7de;
-            border-radius: 20px; /* 胶囊形状 */
+            border-radius: 20px;
             color: #666;
             cursor: pointer;
             transition: all 0.2s ease;
@@ -71,26 +65,12 @@
             box-shadow: 0 4px 8px rgba(0,0,0,0.1);
         }
 
-        .clipboard-btn:active {
-            transform: translateY(0);
-        }
+        .clipboard-btn:active { transform: translateY(0); }
 
-        /* 针对手机屏幕的适配：如果屏幕太小，只显示图标或者调整位置 */
-        @media (max-width: 480px) {
-            .clipboard-btn span {
-                display: none; /* 手机上隐藏文字，只留图标 */
-            }
-            .clipboard-btn {
-                padding: 8px; /* 调整为圆形按钮 */
-                border-radius: 50%;
-            }
-        }
-
-        /* ... h1, p.subtitle, upload-area 等样式保持不变 ... */
         h1 { text-align: center; color: var(--primary-color); margin-top: 0; font-size: 1.8rem; letter-spacing: 1px;}
         p.subtitle { text-align: center; color: #666; margin-bottom: 1.5rem; font-size: 0.95rem; }
         
-        /* 优化上传区域 */
+        /* 上传区域 */
         .upload-area {
             border: 2px dashed #d0d7de;
             border-radius: 16px;
@@ -132,11 +112,7 @@
         }
         #previewImg:hover { transform: scale(1.02); }
 
-        /* ========================================= */
-        /* === 核心修改：按钮样式美化 === */
-        /* ========================================= */
-
-        /* 按钮通用重置 */
+        /* 按钮样式 */
         .action-btn, .secondary-btn {
             font-family: inherit;
             border: none;
@@ -144,7 +120,7 @@
             cursor: pointer;
             font-size: 1rem;
             font-weight: 600;
-            border-radius: 50px; /* 药丸形状 */
+            border-radius: 50px;
             padding: 14px 24px;
             transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
             position: relative;
@@ -155,58 +131,39 @@
             justify-content: center;
         }
 
-        /* 1. 次级按钮（剪切板）：清爽的幽灵按钮风格 */
         .secondary-btn {
             width: 100%;
             margin-top: 1.2rem;
             background-color: #ffffff;
             color: var(--primary-color);
-            border: 2px solid #e1e4e8; /* 默认浅灰边框，不抢眼 */
+            border: 2px solid #e1e4e8;
             box-shadow: 0 2px 6px rgba(0,0,0,0.02);
         }
-
         .secondary-btn:hover {
             border-color: var(--primary-color);
             background-color: #f0f7ff;
             color: var(--primary-hover);
-            transform: translateY(-2px); /* 微微上浮 */
+            transform: translateY(-2px);
             box-shadow: 0 4px 12px rgba(74, 144, 226, 0.15);
         }
+        .secondary-btn:active { transform: translateY(0); background-color: #e5f0ff; }
 
-        .secondary-btn:active {
-            transform: translateY(0);
-            background-color: #e5f0ff;
-        }
-
-        /* 2. 主按钮（开始计算）：渐变+阴影，强调行动 */
         .action-btn {
             width: 100%;
-            margin-top: 2rem; /* 拉开距离 */
-            /* 漂亮的渐变蓝 */
+            margin-top: 2rem;
             background: linear-gradient(135deg, #4a90e2 0%, #2c6eb5 100%);
             color: white;
-            box-shadow: 0 8px 20px rgba(74, 144, 226, 0.3); /* 弥散阴影 */
+            box-shadow: 0 8px 20px rgba(74, 144, 226, 0.3);
         }
-
         .action-btn:hover {
             background: linear-gradient(135deg, #5ca0f2 0%, #357abd 100%);
             box-shadow: 0 12px 24px rgba(74, 144, 226, 0.4);
             transform: translateY(-2px);
         }
+        .action-btn:active { transform: translateY(1px); box-shadow: 0 4px 10px rgba(74, 144, 226, 0.2); }
+        .action-btn:disabled { background: #cbd5e0; box-shadow: none; cursor: not-allowed; transform: none; }
 
-        .action-btn:active {
-            transform: translateY(1px); /* 点击下沉 */
-            box-shadow: 0 4px 10px rgba(74, 144, 226, 0.2);
-        }
-
-        .action-btn:disabled {
-            background: #cbd5e0;
-            box-shadow: none;
-            cursor: not-allowed;
-            transform: none;
-        }
-
-        /* 结果区域样式微调 */
+        /* 结果区域 */
         .result-box {
             margin-top: 2.5rem;
             padding-top: 2rem;
@@ -216,8 +173,8 @@
         }
 
         .total-score-card {
-            background: linear-gradient(120deg, #84fab0 0%, #8fd3f4 100%); /* 更清新的渐变 */
-            color: #2d5a2f; /* 深色字增加对比度 */
+            background: linear-gradient(120deg, #84fab0 0%, #8fd3f4 100%);
+            color: #2d5a2f;
             padding: 1.5rem;
             border-radius: 16px;
             text-align: center;
@@ -226,22 +183,22 @@
             border: 1px solid rgba(255,255,255,0.2);
         }
         .total-score-card h2 { font-size: 1.4rem;font-weight: bold;opacity: 0.8; margin-bottom: 5px; color: #1f4037; }
-        .total-score-card span {
-            font-size: 2.5rem;
-            font-weight: bold;
-            display: block;
-            margin-top: 5px;
-            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.1);
-        }
+        .total-score-card span { font-size: 2.5rem; font-weight: bold; display: block; margin-top: 5px; text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.1); }
 
-        /* 表格美化 */
-        table { width: 100%; border-collapse: separate; border-spacing: 0; font-size: 0.95rem; }
+        /* 表格样式 */
+        .table-responsive {
+            width: 100%;
+            overflow-x: auto; /* 允许横向滚动 */
+            -webkit-overflow-scrolling: touch;
+        }
+        table { width: 100%; border-collapse: separate; border-spacing: 0; font-size: 0.95rem; min-width: 400px; /* 保证最小宽度 */ }
         th { 
             background-color: #f8f9fa; 
             color: #555; 
             font-weight: 600; 
             padding: 12px;
             border-bottom: 2px solid #eef2f5;
+            white-space: nowrap; /* 表头不换行 */
         }
         td { 
             padding: 12px; 
@@ -254,7 +211,6 @@
         
         .rank-symbol { font-weight: bold; display: inline-block; width: 30px; text-align: center; font-family: 'Consolas', monospace; }
 
-        /* 动画保持不变 */
         .loading-spinner { display: none; text-align: center; margin-top: 1rem; }
         .spinner {
             border: 3px solid #f3f3f3;
@@ -264,25 +220,103 @@
             animation: spin 0.8s linear infinite;
             margin: 0 auto 10px;
         }
+
+        .footer {
+            margin-top: 3rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid #f0f0f0;
+            text-align: center;
+            font-size: 0.8rem;
+            color: #9aa5b1;
+            line-height: 1.6;
+        }
+        .footer strong { color: #e6a23c; font-weight: 600; }
+        .footer p { margin: 4px 0; }
+
+        .usage-guide {
+            background-color: #f8fbff;
+            border: 1px solid #e1e8f0;
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-top: 2.5rem;
+            margin-bottom: 1rem;
+            text-align: left;
+        }
+        .usage-guide h3 { margin: 0 0 10px 0; font-size: 1rem; color: var(--primary-color); display: flex; align-items: center; gap: 8px; }
+        .usage-guide ul { margin: 0; padding-left: 20px; color: #555; font-size: 0.9rem; line-height: 1.6; }
+        .usage-guide li { margin-bottom: 6px; }
+        .usage-guide strong { color: #333; font-weight: 600; }
+
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* ========================================= */
+        /* === 移动端响应式核心代码 === */
+        /* ========================================= */
+        @media (max-width: 600px) {
+            body {
+                padding: 0.5rem; /* 减少 Body 外边距 */
+            }
+            .container {
+                padding: 1.5rem 1rem; /* 减少卡片内边距 */
+                border-radius: 12px;
+            }
+
+            /* 标题优化 */
+            h1 { font-size: 1.4rem; margin-top: 0.5rem; }
+            p.subtitle { font-size: 0.85rem; margin-bottom: 1rem; }
+
+            /* 粘贴按钮：手机上改为普通流布局，位于标题上方，方便点击 */
+            .clipboard-btn {
+                position: static; /* 取消绝对定位 */
+                width: 100%;
+                margin-bottom: 1rem;
+                justify-content: center;
+                padding: 10px;
+                background-color: #f8f9fa; /* 浅底色 */
+            }
+            .clipboard-btn span {
+                display: inline !important; /* 强制显示文字 */
+            }
+
+            /* 上传区域优化 */
+            .upload-area { padding: 1.5rem 1rem; }
+            .upload-icon { font-size: 2.5rem; margin-bottom: 10px; }
+            .upload-area p { font-size: 0.9rem; }
+
+            /* 按钮间距 */
+            .action-btn { margin-top: 1.5rem; }
+
+            /* 结果卡片 */
+            .total-score-card { padding: 1rem; margin-bottom: 1.5rem; }
+            .total-score-card h2 { font-size: 1.1rem; }
+            .total-score-card span { font-size: 2rem; }
+
+            /* 表格紧凑化 */
+            th, td { padding: 8px 4px; font-size: 0.85rem; }
+            /* 装备名太长允许换行，但保持左对齐 */
+            td:first-child { text-align: left; }
+            
+            /* 指南和页脚 */
+            .usage-guide { padding: 1rem; }
+            .footer { margin-top: 2rem; }
+        }
     </style>
 </head>
 <body>
 
 <div class="container">
     <button id="pasteBtn" class="clipboard-btn" title="读取剪切板图片">
-        📋<span>粘贴截图</span>
+        <span>粘贴截图</span>
     </button>
     <h1>砍口垒-截图制空计算器</h1>
-    <p class="subtitle" >艦隊コレクション-スクリーンショット制空計算機</p>
-    <p class="subtitle">拖拽或点击上传游戏截图，AI 自动识别计算</p>
+    <p class="subtitle">艦隊コレクション-スクリーンショット制空計算機</p>
+    <p class="subtitle" style="margin-top: -10px; font-size: 0.8rem;">拖拽或点击上传游戏截图，AI 自动识别计算</p>
     
     <!-- 拖拽上传区域 -->
     <div class="upload-area" id="dropZone">
         <span class="upload-icon">📂</span>
-        <p>点击此处选择图片，或将图片拖拽至此</p>
-        
+        <p>点击选择或拖入图片</p>
     </div>
     <input type="file" id="fileInput" accept="image/*">
 
@@ -307,19 +341,40 @@
             <span id="totalScore">0</span>
         </div>
         
-        <table id="detailTable">
-            <thead>
-                <tr>
-                    <th style="width: 35%">装备名称</th>
-                    <th>搭载</th>
-                    <th>改修</th>
-                    <th>熟练度</th>
-                    <th>制空</th>
-                </tr>
-            </thead>
-            <tbody></tbody>
-        </table>
+        <!-- 增加包裹层以支持横向滚动 -->
+        <div class="table-responsive">
+            <table id="detailTable">
+                <thead>
+                    <tr>
+                        <th style="width: 35%; min-width: 100px;">装备名称</th>
+                        <th>搭载</th>
+                        <th>改修</th>
+                        <th>熟练</th>
+                        <th>制空</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+        </div>
     </div>
+    
+    <!-- 【新增】使用指南区域 -->
+    <div class="usage-guide">
+        <h3>📖 使用指南</h3>
+        <ul>
+            <li>请截取游戏内的<strong>「编成-详细」</strong>或<strong>「改装」</strong>界面。</li>
+            <li>AI 需要识别<strong>装备名称</strong>、<strong>改修值(★)</strong>及<strong>熟练度(>>/||)</strong>，请确保这些信息清晰可见。</li>
+            <li>支持 <strong>Ctrl + V</strong> 直接粘贴截图，或点击右上角按钮读取剪切板。</li>
+            <li>若截图包含多个人物，AI 会尝试计算所有装备的制空总和。</li>
+        </ul>
+    </div>
+    <!-- 【新增】页脚免责说明 -->
+    <div class="footer">
+        <p><strong>⚠️ 免责说明</strong></p>
+        <p>本工具核心逻辑及页面由 AI 辅助生成，识别可能存在误差。</p>
+        <p>计算结果仅供参考，请以游戏内实际效果为准。</p>
+    </div>
+
 </div>
 
 <script>
@@ -336,6 +391,8 @@
     // 交互逻辑
     dropZone.addEventListener('click', () => fileInput.click());
     fileInput.addEventListener('change', function() { if (this.files.length) handleFile(this.files[0]); });
+    
+    // 拖拽支持
     dropZone.addEventListener('dragover', (e) => { e.preventDefault(); dropZone.classList.add('dragover'); });
     dropZone.addEventListener('dragleave', () => { dropZone.classList.remove('dragover'); });
     dropZone.addEventListener('drop', (e) => {
@@ -344,75 +401,42 @@
         if (e.dataTransfer.files.length) handleFile(e.dataTransfer.files[0]);
     });
 
-    // --- 新增代码开始：让预览区域也能接收拖拽 ---
-    
-    // 1. 拖拽进入预览区
-    previewContainer.addEventListener('dragover', (e) => {
-        e.preventDefault(); 
-        previewContainer.classList.add('dragover'); 
-    });
-
-    // 2. 拖拽离开预览区
-    previewContainer.addEventListener('dragleave', () => {
-        previewContainer.classList.remove('dragover');
-    });
-
-    // 3. 在预览区释放图片
+    // 预览区域拖拽支持
+    previewContainer.addEventListener('dragover', (e) => { e.preventDefault(); previewContainer.classList.add('dragover'); });
+    previewContainer.addEventListener('dragleave', () => { previewContainer.classList.remove('dragover'); });
     previewContainer.addEventListener('drop', (e) => {
         e.preventDefault();
-        previewContainer.classList.remove('dragover'); // 移除样式
-        if (e.dataTransfer.files.length) {
-            handleFile(e.dataTransfer.files[0]); // 调用原本的处理函数
-        }
+        previewContainer.classList.remove('dragover');
+        if (e.dataTransfer.files.length) handleFile(e.dataTransfer.files[0]);
     });
 
-    // --- 新增代码结束 ---
-
-    // --- 之前的修复：请确保之前的重复监听代码已删除，只保留这一行 ---
     previewImg.addEventListener('click', () => fileInput.click()); 
 
-    // --- 新增：剪切板读取逻辑 ---
+    // 剪切板逻辑
     const pasteBtn = document.getElementById('pasteBtn');
-
     pasteBtn.addEventListener('click', async () => {
         try {
-            // 请求读取剪切板权限（通常浏览器会弹窗询问或需要 HTTPS 环境）
             const clipboardItems = await navigator.clipboard.read();
-            
             let foundImage = false;
-
             for (const item of clipboardItems) {
-                // 查找剪切板项中是否有图片类型
                 const imageType = item.types.find(type => type.startsWith('image/'));
-                
                 if (imageType) {
-                    // 获取图片 Blob 数据
                     const blob = await item.getType(imageType);
-                    // 将 Blob 转换为 File 对象（为了兼容后续逻辑，也可以直接传 Blob）
                     const file = new File([blob], "clipboard_image.png", { type: imageType });
-                    
-                    // 调用现有的处理函数
                     handleFile(file);
                     foundImage = true;
-                    break; // 找到一张图就停止
+                    break;
                 }
             }
-
-            if (!foundImage) {
-                alert("剪切板里没有图片哦，请先截图或复制图片。");
-            }
-
+            if (!foundImage) alert("剪切板里没有图片哦，请先截图或复制图片。");
         } catch (err) {
             console.error(err);
-            // 常见错误处理：浏览器不支持、用户拒绝权限、或非 HTTPS 环境
-            if (err.name === 'NotAllowedError') {
-                alert("读取失败：请允许网页访问剪切板权限。");
-            } else {
-                alert("无法读取剪切板：请确保使用 HTTPS 协议或现代浏览器（Chrome/Edge/Firefox）。");
-            }
+            if (err.name === 'NotAllowedError') alert("读取失败：请允许网页访问剪切板权限。");
+            else alert("无法读取剪切板：请确保使用 HTTPS 协议或现代浏览器。");
         }
     });
-// 监听全局粘贴事件 (Ctrl+V)
+
+    // PC端全局粘贴支持
     document.addEventListener('paste', (e) => {
         const items = e.clipboardData && e.clipboardData.items;
         if (items) {
@@ -420,7 +444,7 @@
                 if (items[i].type.indexOf('image') !== -1) {
                     const blob = items[i].getAsFile();
                     handleFile(blob);
-                    e.preventDefault(); // 阻止默认粘贴行为
+                    e.preventDefault();
                     break;
                 }
             }
@@ -439,29 +463,20 @@
         reader.readAsDataURL(file);
     }
     
-    // 修改点2：熟练度符号转换逻辑
     function getRankSymbol(rank) {
         const r = Number(rank);
-        
-        // 7级: 金色 >> (双箭头)
         if (r === 7) return '<span class="rank-symbol" style="color:#FFA500; font-size: 1.1em;">>></span>'; 
-        
-        // 4-6级: 金色斜杠 /, //, ///
         if (r === 6) return '<span class="rank-symbol" style="color:#FFA500;">///</span>';
         if (r === 5) return '<span class="rank-symbol" style="color:#FFA500;">//</span>';
         if (r === 4) return '<span class="rank-symbol" style="color:#FFA500;">/</span>';
-        
-        // 1-3级: 蓝色竖线 | (游戏原样)
         if (r === 3) return '<span class="rank-symbol" style="color:#0099FF;">|||</span>';
         if (r === 2) return '<span class="rank-symbol" style="color:#0099FF;">||</span>';
         if (r === 1) return '<span class="rank-symbol" style="color:#0099FF;">|</span>';
-        
         return '<span style="color:#ccc">-</span>';
     }
 
     async function processImage() {
         if (!currentFile) { alert("请先选择或拖拽一张图片"); return; }
-
         const btn = document.getElementById('btn');
         const loading = document.getElementById('loading');
         const resultArea = document.getElementById('resultArea');
@@ -479,7 +494,6 @@
                 method: 'POST',
                 body: formData
             });
-
             const data = await response.json();
             if (data.error) throw new Error(data.error);
 
@@ -499,7 +513,9 @@
             });
 
             resultArea.style.display = 'block';
-            resultArea.scrollIntoView({ behavior: 'smooth' });
+            setTimeout(() => {
+                resultArea.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }, 100);
 
         } catch (err) {
             console.error(err);
